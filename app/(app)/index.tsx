@@ -12,14 +12,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { WebView } from "react-native-webview";
 import { useAuth } from "../../context/AuthContext";
 import { auth } from "../../firebase";
 
 export default function HomeScreen() {
   const { profile, user } = useAuth();
   const router = useRouter();
-  const [welcomeVisible, setWelcomeVisible] = useState(true);
+
+  // Navigation State
   const [navOpen, setNavOpen] = useState(false);
+  const [welcomeVisible, setWelcomeVisible] = useState(true);
 
   // Animation Refs
   const slideAnim = useRef(new Animated.Value(-100)).current;
@@ -27,7 +30,7 @@ export default function HomeScreen() {
   const navAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Welcome Banner Animation
+    // Welcome Banner Entry Animation
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue: 0,
@@ -41,6 +44,7 @@ export default function HomeScreen() {
       }),
     ]).start();
 
+    // Auto-dismiss welcome popup after 3.5s
     const timer = setTimeout(() => {
       dismissWelcome();
     }, 3500);
@@ -79,7 +83,7 @@ export default function HomeScreen() {
 
   const displayName = profile?.name || user?.email?.split("@")[0] || "User";
 
-  // Interpolations for Floating Menu Animation
+  // Interpolations for FAB Menu
   const rotatePlus = navAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "45deg"],
@@ -107,53 +111,104 @@ export default function HomeScreen() {
             contentContainerStyle={styles.container}
             showsVerticalScrollIndicator={false}
           >
-            {/* Header Section */}
+            {/* Dashboard Header */}
             <View style={styles.header}>
               <Text style={styles.appBadge}>Community Food Bank</Text>
-              <Text style={styles.heading}>Dashboard</Text>
+              <Text style={styles.heading}>Welcome Dashboard</Text>
               <Text style={styles.subHeading}>
-                Sharing abundance, ending waste.
+                Sharing abundance, reducing food waste together.
               </Text>
             </View>
 
-            {/* Profile Glass Card */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Your Profile Summary</Text>
+            {/* Feature Video Section */}
+            <View style={styles.glassCard}>
+              <Text style={styles.cardTitle}>🎥 How Food Donation Works</Text>
+              <Text style={styles.cardSubtitle}>
+                Watch how your surplus meals help families in need.
+              </Text>
 
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Name:</Text>
-                <Text style={styles.value}>{profile?.name || "N/A"}</Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>ID Number:</Text>
-                <Text style={styles.value}>{profile?.nationalId || "N/A"}</Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Email:</Text>
-                <Text style={styles.value}>
-                  {profile?.email || user?.email}
-                </Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Phone:</Text>
-                <Text style={styles.value}>{profile?.phone || "N/A"}</Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Address:</Text>
-                <Text style={styles.value}>{profile?.address || "N/A"}</Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Birthday:</Text>
-                <Text style={styles.value}>{profile?.birthday || "N/A"}</Text>
+              <View style={styles.videoContainer}>
+                <WebView
+                  style={styles.video}
+                  javaScriptEnabled={true}
+                  domStorageEnabled={true}
+                  source={{
+                    uri: "https://youtu.be/CiFoHm7HD94?si=W1Atg2lw3xpIs2Yl",
+                  }}
+                />
               </View>
             </View>
 
-            {/* Sign Out Button */}
+            {/* Suggested Food Items Card */}
+            <View style={styles.glassCard}>
+              <Text style={styles.cardTitle}>🥫 High-Demand Items Needed</Text>
+              <Text style={styles.cardSubtitle}>
+                Consider donating these requested food items:
+              </Text>
+
+              <View style={styles.suggestionGrid}>
+                <View style={styles.suggestionItem}>
+                  <Text style={styles.suggestionEmoji}>🌾</Text>
+                  <Text style={styles.suggestionTitle}>Grains & Rice</Text>
+                  <Text style={styles.suggestionDesc}>
+                    Rice, Oats, Pasta & Flour
+                  </Text>
+                </View>
+
+                <View style={styles.suggestionItem}>
+                  <Text style={styles.suggestionEmoji}>🥫</Text>
+                  <Text style={styles.suggestionTitle}>Canned Goods</Text>
+                  <Text style={styles.suggestionDesc}>
+                    Soups, Beans & Vegetables
+                  </Text>
+                </View>
+
+                <View style={styles.suggestionItem}>
+                  <Text style={styles.suggestionEmoji}>🥛</Text>
+                  <Text style={styles.suggestionTitle}>Dairy & Milk</Text>
+                  <Text style={styles.suggestionDesc}>
+                    Powdered or UHT Shelf-stable
+                  </Text>
+                </View>
+
+                <View style={styles.suggestionItem}>
+                  <Text style={styles.suggestionEmoji}>🍎</Text>
+                  <Text style={styles.suggestionTitle}>Fresh Produce</Text>
+                  <Text style={styles.suggestionDesc}>
+                    Uninjured Fruits & Veggies
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Donation Safety Guidelines Card */}
+            <View style={styles.glassCard}>
+              <Text style={styles.cardTitle}>💡 Safe Donation Tips</Text>
+
+              <View style={styles.tipRow}>
+                <Text style={styles.tipIcon}>✓</Text>
+                <Text style={styles.tipText}>
+                  Ensure packaged food is within valid expiration dates.
+                </Text>
+              </View>
+
+              <View style={styles.tipRow}>
+                <Text style={styles.tipIcon}>✓</Text>
+                <Text style={styles.tipText}>
+                  Keep cooked surplus hot/frozen in sealed containers.
+                </Text>
+              </View>
+
+              <View style={styles.tipRow}>
+                <Text style={styles.tipIcon}>✓</Text>
+                <Text style={styles.tipText}>
+                  Avoid donating unsealed, highly perishable, or damaged
+                  packages.
+                </Text>
+              </View>
+            </View>
+
+            {/* Logout Action Button */}
             <TouchableOpacity
               style={styles.signOutButton}
               onPress={handleSignOut}
@@ -165,7 +220,6 @@ export default function HomeScreen() {
 
           {/* Rudder / Plus Navigation System */}
           <View pointerEvents="box-none" style={styles.navContainer}>
-            {/* Expanded Menu Bar */}
             {navOpen && (
               <Animated.View
                 style={[
@@ -227,7 +281,7 @@ export default function HomeScreen() {
               </Animated.View>
             )}
 
-            {/* Main Center Plus Floating Button */}
+            {/* Main Floating Action Plus Button */}
             <TouchableOpacity
               style={styles.fabButton}
               onPress={toggleRudderNav}
@@ -245,7 +299,7 @@ export default function HomeScreen() {
           </View>
         </SafeAreaView>
 
-        {/* Animated Greeting Banner */}
+        {/* Welcome Pop-up Modal */}
         {welcomeVisible && (
           <Modal transparent visible={welcomeVisible} animationType="none">
             <View style={styles.modalOverlay}>
@@ -288,11 +342,11 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(15, 23, 42, 0.45)",
+    backgroundColor: "rgba(15, 23, 42, 0.5)",
   },
   container: {
     padding: 20,
-    paddingBottom: 110,
+    paddingBottom: 120,
   },
   header: {
     marginBottom: 20,
@@ -323,11 +377,13 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginTop: 2,
   },
-  card: {
+
+  /* Glass Card Styles */
+  glassCard: {
     backgroundColor: "rgba(255, 255, 255, 0.85)",
-    borderRadius: 20,
+    borderRadius: 22,
     padding: 20,
-    marginBottom: 20,
+    marginBottom: 18,
     borderWidth: 1.5,
     borderColor: "rgba(255, 255, 255, 0.9)",
     shadowColor: "#000",
@@ -340,35 +396,83 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "800",
     color: "#0F172A",
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    color: "#475569",
+    fontWeight: "500",
     marginBottom: 16,
-    borderBottomWidth: 1.5,
-    borderBottomColor: "rgba(203, 213, 225, 0.8)",
-    paddingBottom: 8,
   },
-  infoRow: {
+
+  /* Video Embed Styles */
+  videoContainer: {
+    height: 200,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "#000",
+  },
+  video: {
+    flex: 1,
+  },
+
+  /* Suggestion Grid Styles */
+  suggestionGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-between",
-    marginBottom: 12,
+    gap: 12,
   },
-  label: {
+  suggestionItem: {
+    width: "48%",
+    backgroundColor: "rgba(241, 245, 249, 0.9)",
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  suggestionEmoji: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  suggestionTitle: {
+    fontSize: 14,
     fontWeight: "700",
-    color: "#334155",
-    width: "35%",
-    fontSize: 14,
-  },
-  value: {
     color: "#0F172A",
-    fontWeight: "600",
-    width: "65%",
-    textAlign: "right",
-    fontSize: 14,
   },
+  suggestionDesc: {
+    fontSize: 11,
+    color: "#64748B",
+    marginTop: 2,
+  },
+
+  /* Guidelines Styles */
+  tipRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  tipIcon: {
+    color: "#059669",
+    fontWeight: "800",
+    fontSize: 16,
+    marginRight: 8,
+    marginTop: -2,
+  },
+  tipText: {
+    fontSize: 13,
+    color: "#334155",
+    fontWeight: "600",
+    flex: 1,
+    lineHeight: 18,
+  },
+
   signOutButton: {
     backgroundColor: "#EF4444",
     padding: 16,
     borderRadius: 14,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 8,
     shadowColor: "#EF4444",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -381,7 +485,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  /* Rudder FAB Floating Navigation Styles */
+  /* Rudder FAB Navigation Styles */
   navContainer: {
     position: "absolute",
     bottom: 24,
